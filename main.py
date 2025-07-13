@@ -5,19 +5,20 @@ from app.config import Config
 from app.handlers import *
 from app.server import web_server
 
-# Initialize Pyrogram Client
+# ✅ Use in-memory session to avoid "database is locked" error on Render
 bot = Client(
-    "bot",
+    name=":memory:",
     api_id=Config.API_ID,
     api_hash=Config.API_HASH,
-    bot_token=Config.BOT_TOKEN
+    bot_token=Config.BOT_TOKEN,
+    workdir="/tmp"
 )
 
 async def main():
     await bot.start()
     print(f"✅ Bot @{(await bot.get_me()).username} started!")
 
-    # Start aiohttp server
+    # 🌐 Start aiohttp web server
     app = await web_server(Config.BOT_TOKEN)
     runner = web.AppRunner(app)
     await runner.setup()
@@ -25,7 +26,8 @@ async def main():
     await site.start()
     print(f"🌐 Web server running at http://0.0.0.0:{Config.PORT}")
 
-    await asyncio.Event().wait()  # keep the app running
+    # Keep the app alive
+    await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
